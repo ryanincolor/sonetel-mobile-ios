@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "🍎 Start iOS Auto-Sync",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/auto-sync-ios.js",
+      "console": "integratedTerminal",
+      "presentation": {
+        "hidden": false,
+        "group": "iOS Development",
+        "order": 1
+      },
+      "preLaunchTask": "iOS Auto-Sync: Setup"
+    }
+  ]
+}

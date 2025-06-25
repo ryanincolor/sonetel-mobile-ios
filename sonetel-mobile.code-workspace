@@ -1,0 +1,87 @@
+{
+  "folders": [
+    {
+      "name": "🍎 Sonetel Mobile (iOS)",
+      "path": ".",
+    },
+    {
+      "name": "📱 SwiftUI Views",
+      "path": "./Sonetel Mobile/Views",
+    },
+    {
+      "name": "🧩 Models",
+      "path": "./Sonetel Mobile/Models",
+    },
+    {
+      "name": "🎨 Builder.io Dev Server",
+      "path": ".",
+      "settings": {
+        "files.exclude": {
+          "Sonetel Mobile/**": true,
+          "*.xcodeproj/**": true,
+          "auto-sync-ios.js": false,
+          "server.js": false,
+          "package.json": false,
+        },
+      },
+    },
+  ],
+  "settings": {
+    "ios.project.name": "Sonetel Mobile",
+    "ios.project.path": "Sonetel Mobile.xcodeproj",
+    "ios.autoSync.enabled": true,
+    "task.autoDetect": "on",
+    "terminal.integrated.defaultProfile.osx": "bash",
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "🚀 Start iOS Development Environment",
+        "dependsOrder": "parallel",
+        "dependsOn": ["iOS Auto-Sync: Start", "Start Dev Server"],
+        "group": "build",
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "dedicated",
+        },
+      },
+      {
+        "label": "Start Dev Server",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "dev"],
+        "group": "build",
+        "isBackground": true,
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "dedicated",
+        },
+      },
+    ],
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "🍎 Complete iOS Development Setup",
+        "type": "node",
+        "request": "launch",
+        "program": "${workspaceFolder}/auto-sync-ios.js",
+        "console": "integratedTerminal",
+        "preLaunchTask": "🚀 Start iOS Development Environment",
+      },
+    ],
+  },
+  "extensions": {
+    "recommendations": [
+      "sswg.swift-lang",
+      "vknabel.vscode-swift-development-environment",
+      "builder.builder",
+    ],
+  },
+}

@@ -1,0 +1,35 @@
+{
+  "builder.preview.port": 3000,
+  "builder.framework": "swiftui",
+  "builder.apiHost": "http://localhost:3000",
+  "builder.enabled": true,
+  "builder.chat.enabled": true,
+  "builder.chat.apiEndpoint": "http://localhost:3000/api/v1/chat",
+  "builder.chat.capabilities": ["swiftui", "ios", "code-generation"],
+  "builder.devServer": {
+    "command": "npm run dev",
+    "port": 3000,
+    "host": "localhost",
+    "framework": "swiftui"
+  },
+  "builder.workspace": {
+    "framework": "swiftui",
+    "type": "ios",
+    "projectPath": "Sonetel Mobile.xcodeproj",
+    "sourcePath": "Sonetel Mobile/Views/"
+  },
+  "files.watcherExclude": {
+    "**/auto-sync-ios.js": true,
+    "**/node_modules/**": true
+  },
+  "files.associations": {
+    "*.swift": "swift"
+  },
+  "swift.autoGenerateLanguageServerConfiguration": true,
+  "ios.autoSync.enabled": true,
+  "ios.autoSync.interval": 2000,
+  "ios.autoSync.showNotifications": true,
+  "terminal.integrated.defaultProfile.osx": "bash",
+  "task.autoDetect": "on",
+  "task.showDecorations": true
+}

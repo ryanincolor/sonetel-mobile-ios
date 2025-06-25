@@ -1,0 +1,13 @@
+{
+  "name": "ios-auto-sync",
+  "version": "1.0.0",
+  "description": "Automatic file synchronization for iOS project",
+  "main": "auto-sync-ios.js",
+  "scripts": {
+    "start": "node auto-sync-ios.js",
+    "sync": "node auto-sync-ios.js"
+  },
+  "bin": {
+    "ios-sync": "./auto-sync-ios.js"
+  }
+}

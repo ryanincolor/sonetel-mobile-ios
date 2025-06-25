@@ -1,0 +1,77 @@
+{
+  "name": "ios-auto-sync",
+  "displayName": "iOS Auto-Sync for Builder.io",
+  "description": "Automatically sync iOS SwiftUI files with Builder.io development server",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/*.xcodeproj",
+    "workspaceContains:Sonetel Mobile"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "iosAutoSync.start",
+        "title": "🍎 Start Auto-Sync",
+        "category": "iOS"
+      },
+      {
+        "command": "iosAutoSync.stop",
+        "title": "🛑 Stop Auto-Sync",
+        "category": "iOS"
+      },
+      {
+        "command": "iosAutoSync.syncNow",
+        "title": "🔄 Sync Now",
+        "category": "iOS"
+      },
+      {
+        "command": "iosAutoSync.openXcode",
+        "title": "📱 Open in Xcode",
+        "category": "iOS"
+      }
+    ],
+    "statusBarItems": [
+      {
+        "id": "iosAutoSync.status",
+        "name": "iOS Auto-Sync Status",
+        "text": "$(sync) iOS Sync",
+        "tooltip": "iOS Auto-Sync Status",
+        "command": "iosAutoSync.start",
+        "alignment": "right",
+        "priority": 100
+      }
+    ],
+    "configuration": {
+      "title": "iOS Auto-Sync",
+      "properties": {
+        "iosAutoSync.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic file synchronization"
+        },
+        "iosAutoSync.interval": {
+          "type": "number",
+          "default": 2000,
+          "description": "Sync interval in milliseconds"
+        },
+        "iosAutoSync.serverUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "Builder.io development server URL"
+        },
+        "iosAutoSync.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when files are synced"
+        }
+      }
+    }
+  }
+}

@@ -10,31 +10,31 @@ import SwiftUI
 struct ContactDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showCallOptions = false
-    
+
     let contact: Contact
-    
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Header
                 headerView
-                
+
                 // Content
                 ScrollView {
                     VStack(spacing: 20) {
                         // Profile section
                         profileSectionView
-                        
+
                         // Contact info section
                         contactInfoSectionView
-                        
+
                         Spacer(minLength: 40)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
                 }
             }
-            .background(Color.white)
+            .background(FigmaColorTokens.surfacePrimary)
         }
         .sheet(isPresented: $showCallOptions) {
             CallOptionsView(contact: contact)
@@ -42,7 +42,7 @@ struct ContactDetailView: View {
                 .presentationDragIndicator(.hidden)
         }
     }
-    
+
     private var headerView: some View {
         HStack {
             Button(action: { dismiss() }) {
@@ -50,19 +50,19 @@ struct ContactDetailView: View {
                     Circle()
                         .fill(Color(red: 0.953, green: 0.953, blue: 0.953))
                         .frame(width: 44, height: 44)
-                    
+
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
             }
-            
+
             Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 15.5)
         .frame(height: 75)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .overlay(
             Rectangle()
                 .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
@@ -70,7 +70,7 @@ struct ContactDetailView: View {
             alignment: .bottom
         )
     }
-    
+
     private var profileSectionView: some View {
         VStack(spacing: 9) {
             // Avatar
@@ -82,7 +82,7 @@ struct ContactDetailView: View {
                 ZStack {
                     Circle()
                         .fill(Color.gray.opacity(0.3))
-                    
+
                     Text(contact.initial)
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(.white)
@@ -90,16 +90,16 @@ struct ContactDetailView: View {
             }
             .frame(width: 64, height: 64)
             .clipShape(Circle())
-            
+
             // Name
             Text("Emma Carter")
                 .font(.system(size: 34, weight: .semibold))
-                .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                .foregroundColor(FigmaColorTokens.textPrimary)
                 .tracking(-0.68)
         }
         .padding(.horizontal, 20)
     }
-    
+
     private var contactInfoSectionView: some View {
         VStack(spacing: 8) {
             ContactInfoRowView(
@@ -110,7 +110,7 @@ struct ContactDetailView: View {
                     showCallOptions = true
                 }
             )
-            
+
             ContactInfoRowView(
                 label: "Email",
                 value: "emma@tailored.com",
@@ -118,7 +118,7 @@ struct ContactDetailView: View {
                 onTap: nil
             )
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(20)
     }
 }
@@ -128,7 +128,7 @@ struct ContactInfoRowView: View {
     let value: String
     let isPhoneNumber: Bool
     let onTap: (() -> Void)?
-    
+
     var body: some View {
         Button(action: {
             onTap?()
@@ -137,15 +137,15 @@ struct ContactInfoRowView: View {
                 // Left content
                 Text(label)
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .tracking(-0.36)
-                
+
                 Spacer()
-                
+
                 // Right content
                 Text(value)
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .tracking(-0.36)
             }
             .padding(.horizontal, 16)
@@ -156,7 +156,7 @@ struct ContactInfoRowView: View {
         .disabled(onTap == nil)
         .overlay(
             Rectangle()
-                .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+                .fill(FigmaColorTokens.adaptiveT1)
                 .frame(height: 1),
             alignment: .bottom
         )

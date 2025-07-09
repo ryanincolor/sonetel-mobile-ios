@@ -13,8 +13,8 @@ struct OnboardingFlowView: View {
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                // Main app
-                CallsView()
+                // Main app with tab navigation
+                MainTabView()
                     .environmentObject(authManager)
             } else {
                 // Onboarding flow
@@ -60,7 +60,7 @@ struct OnboardingFlowView: View {
                         ))
 
                 case .completed:
-                    CallsView()
+                    MainTabView()
                         .environmentObject(authManager)
                         .transition(.opacity)
                 }

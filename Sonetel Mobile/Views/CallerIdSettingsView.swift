@@ -8,16 +8,23 @@
 import SwiftUI
 
 struct CallerIdSettingsView: View {
+    @Binding var callSettings: CallSettings
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var apiService = SonetelAPIService.shared
+
     @State private var showOutgoingSelection = false
     @State private var showIncomingSelection = false
-    @State private var outgoingCallerId = "Automatic"
-    @State private var incomingCallerId = "Caller's number"
+    @State private var showError = false
+    @State private var errorMessage = ""
+
+    init(callSettings: Binding<CallSettings>) {
+        self._callSettings = callSettings
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            ModalHeaderView(title: "Caller ID", hasBackButton: true) {
+            NavigationHeaderView(title: "Caller ID") {
                 dismiss()
             }
 
@@ -30,18 +37,38 @@ struct CallerIdSettingsView: View {
             .padding(.top, 28)
             .frame(maxHeight: .infinity)
         }
-        .background(Color.white)
-        .ignoresSafeArea(.all, edges: .top)
+        .background(FigmaColorTokens.surfacePrimary)
         .navigationBarHidden(true)
-        .sheet(isPresented: $showOutgoingSelection) {
-            CallerIdSelectionView(selectedCallerId: $outgoingCallerId)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.hidden)
+        .navigationDestination(isPresented: $showOutgoingSelection) {
+            CallerIdSelectionView(
+                selectedCallerId: Binding(
+                    get: { callSettings.callerIdSettings.outgoing },
+                    set: { newValue in
+                        Task {
+                            await updateCallerIdSetting(type: .outgoing, value: newValue)
+                        }
+                    }
+                ),
+                selectionType: .outgoing
+            )
         }
-        .sheet(isPresented: $showIncomingSelection) {
-            CallerIdSelectionView(selectedCallerId: $incomingCallerId)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.hidden)
+        .navigationDestination(isPresented: $showIncomingSelection) {
+            CallerIdSelectionView(
+                selectedCallerId: Binding(
+                    get: { callSettings.callerIdSettings.incoming },
+                    set: { newValue in
+                        Task {
+                            await updateCallerIdSetting(type: .incoming, value: newValue)
+                        }
+                    }
+                ),
+                selectionType: .incoming
+            )
+        }
+        .alert("Error", isPresented: $showError) {
+            Button("OK") { }
+        } message: {
+            Text(errorMessage)
         }
     }
 
@@ -57,26 +84,64 @@ struct CallerIdSettingsView: View {
             // Outgoing calls
             CallerIdSettingRowView(
                 title: "Outgoing calls",
-                value: outgoingCallerId
+                value: displayValueForCallerIdType(callSettings.callerIdSettings.outgoing)
             ) {
                 showOutgoingSelection = true
             }
 
             Rectangle()
-                .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+                .fill(FigmaColorTokens.adaptiveT1)
                 .frame(height: 1)
                 .padding(.horizontal, 16)
 
             // Incoming calls
             CallerIdSettingRowView(
                 title: "Incoming calls",
-                value: incomingCallerId
+                value: displayValueForCallerIdType(callSettings.callerIdSettings.incoming)
             ) {
                 showIncomingSelection = true
             }
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(20)
+    }
+
+    // MARK: - Helper Methods
+
+    private func displayValueForCallerIdType(_ type: String) -> String {
+        if let callerIdType = CallerIdType(rawValue: type) {
+            return callerIdType.displayName
+        }
+        // If it's a specific phone number or unknown type
+        return type.capitalized
+    }
+
+    private func updateCallerIdSetting(type: CallerIdSelectionType, value: String) async {
+        print("🔧 CallerIdSettings: Updating \(type) caller ID to: \(value)")
+
+        do {
+            let updatedSettings: CallSettings
+
+            switch type {
+            case .outgoing:
+                print("🔧 CallerIdSettings: Updating outgoing caller ID to: \(value)")
+                updatedSettings = try await apiService.updateOutgoingCallerIdOnly(show: value)
+            case .incoming:
+                print("🔧 CallerIdSettings: Updating incoming caller ID to: \(value)")
+                updatedSettings = try await apiService.updateIncomingCallerIdOnly(show: value)
+            }
+
+            await MainActor.run {
+                self.callSettings = updatedSettings
+                print("✅ CallerIdSettings: Successfully updated \(type) to \(value)")
+            }
+        } catch {
+            await MainActor.run {
+                self.errorMessage = "Failed to update caller ID settings: \(error.localizedDescription)"
+                self.showError = true
+                print("❌ CallerIdSettings: Update failed: \(error)")
+            }
+        }
     }
 }
 
@@ -127,6 +192,6 @@ struct CallerIdSettingRowView: View {
 
 #Preview {
     NavigationStack {
-        CallerIdSettingsView()
+        CallerIdSettingsView(callSettings: .constant(CallSettings.defaultSettings))
     }
 }

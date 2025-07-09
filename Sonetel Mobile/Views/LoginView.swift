@@ -23,10 +23,10 @@ struct LoginView: View {
                     contentView
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
+                .background(FigmaColorTokens.surfacePrimary)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .ignoresSafeArea(.all, edges: .top)
         .alert("Error", isPresented: .constant(authManager.errorMessage != nil)) {
             Button("OK") {
@@ -41,7 +41,7 @@ struct LoginView: View {
         HStack {
             Text("9:41")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
 
             Spacer()
 
@@ -59,7 +59,7 @@ struct LoginView: View {
                 // WiFi icon
                 Image(systemName: "wifi")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
 
                 // Battery
                 ZStack {
@@ -83,7 +83,7 @@ struct LoginView: View {
         .padding(.horizontal, 16)
         .padding(.top, 21)
         .frame(height: 50)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
     }
 
     private var contentView: some View {
@@ -95,7 +95,7 @@ struct LoginView: View {
                 // Title
                 Text("Welcome")
                     .font(.system(size: 34, weight: .semibold))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .tracking(-0.68)
 
                 // Forms and buttons
@@ -138,12 +138,11 @@ struct LoginView: View {
                     HStack {
                         TextField("", text: $authManager.email)
                             .font(.system(size: 16, weight: .regular))
-                            .foregroundColor(.black)
+                            .foregroundColor(FigmaColorTokens.textPrimary)
                             .focused($isEmailFocused)
                             .keyboardType(.emailAddress)
                             .autocapitalization(.none)
                             .autocorrectionDisabled()
-                            .disabled(authManager.showPasswordField && !authManager.email.isEmpty)
 
                         Spacer()
                     }
@@ -171,7 +170,7 @@ struct LoginView: View {
                         HStack {
                             SecureField("", text: $authManager.password)
                                 .font(.system(size: 16, weight: .regular))
-                                .foregroundColor(.black)
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                                 .focused($isPasswordFocused)
 
                             Spacer()
@@ -236,16 +235,16 @@ struct LoginView: View {
                 HStack(spacing: 15) {
                     Text("Continue with Google")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.black)
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                         .tracking(-0.32)
 
                     Image(systemName: "globe")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.black)
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(Color.black.opacity(0.04))
+                .background(FigmaColorTokens.adaptiveT1)
                 .cornerRadius(100)
             }
             .disabled(authManager.isLoading)
@@ -257,16 +256,16 @@ struct LoginView: View {
                 HStack(spacing: 15) {
                     Text("Continue with Apple")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.black)
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                         .tracking(-0.32)
 
                     Image(systemName: "applelogo")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.black)
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(Color.black.opacity(0.04))
+                .background(FigmaColorTokens.adaptiveT1)
                 .cornerRadius(100)
             }
             .disabled(authManager.isLoading)
@@ -279,7 +278,7 @@ struct LoginView: View {
         }) {
             Text("Terms of use")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                .foregroundColor(FigmaColorTokens.textPrimary)
                 .underline()
         }
     }

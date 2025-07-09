@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct CallsView: View {
+    @Binding var isDetailViewPresented: Bool
     @EnvironmentObject var authManager: AuthenticationManager
+    @StateObject private var dataManager = DataManager.shared
     @State private var searchText = ""
     @State private var selectedFilter = "All"
     @State private var showSettings = false
@@ -36,10 +38,14 @@ struct CallsView: View {
             }
             .clipped()
 
-            // Bottom navigation
-            BottomNavigationView()
+
         }
-        .background(Color.white)
+        .background(
+            Color(UIColor { traitCollection in
+                return traitCollection.userInterfaceStyle == .dark ?
+                    UIColor(FigmaColorTokens.Dark.Z0) : UIColor(FigmaColorTokens.Light.Z0)
+            })
+        )
         .ignoresSafeArea(.all, edges: .top)
         .navigationBarHidden(true)
         .sheet(isPresented: $showSettings) {
@@ -49,6 +55,12 @@ struct CallsView: View {
         .sheet(isPresented: $showNewCall) {
             NewCallView()
         }
+        .task {
+            await dataManager.loadCallsIfEmpty()
+        }
+        .refreshable {
+            await dataManager.refreshCalls()
+        }
         }
     }
 
@@ -56,7 +68,12 @@ struct CallsView: View {
         VStack(spacing: 0) {
             // Status bar spacer
             Rectangle()
-                .fill(Color.white)
+                .fill(
+                    Color(UIColor { traitCollection in
+                        return traitCollection.userInterfaceStyle == .dark ?
+                            UIColor(FigmaColorTokens.Dark.Z0) : UIColor(FigmaColorTokens.Light.Z0)
+                    })
+                )
                 .frame(height: 50)
 
             // Header content
@@ -86,7 +103,11 @@ struct CallsView: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 12)
                             .frame(minWidth: 64)
-                            .background(selectedFilter == "All" ? Color.black.opacity(0.04) : Color.clear)
+                            .background(selectedFilter == "All" ?
+                                Color(UIColor { traitCollection in
+                                    return traitCollection.userInterfaceStyle == .dark ?
+                                        UIColor(FigmaColorTokens.Dark.T1) : UIColor(FigmaColorTokens.Light.T1)
+                                }) : Color.clear)
                             .clipShape(RoundedRectangle(cornerRadius: 28))
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -100,7 +121,11 @@ struct CallsView: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 12)
                             .frame(minWidth: 64)
-                            .background(selectedFilter == "Missed" ? Color.black.opacity(0.04) : Color.clear)
+                            .background(selectedFilter == "Missed" ?
+                                Color(UIColor { traitCollection in
+                                    return traitCollection.userInterfaceStyle == .dark ?
+                                        UIColor(FigmaColorTokens.Dark.T1) : UIColor(FigmaColorTokens.Light.T1)
+                                }) : Color.clear)
                             .clipShape(RoundedRectangle(cornerRadius: 28))
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -123,7 +148,12 @@ struct CallsView: View {
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
-            .background(Color.white)
+            .background(
+                Color(UIColor { traitCollection in
+                    return traitCollection.userInterfaceStyle == .dark ?
+                        UIColor(FigmaColorTokens.Dark.Z0) : UIColor(FigmaColorTokens.Light.Z0)
+                })
+            )
         }
     }
 
@@ -149,7 +179,12 @@ struct CallsView: View {
                 Spacer()
             }
             .frame(height: 44)
-            .background(Color.black.opacity(0.04))
+            .background(
+                Color(UIColor { traitCollection in
+                    return traitCollection.userInterfaceStyle == .dark ?
+                        UIColor(FigmaColorTokens.Dark.T1) : UIColor(FigmaColorTokens.Light.T1)
+                })
+            )
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .padding(.horizontal, 20)
@@ -158,24 +193,95 @@ struct CallsView: View {
 
     private var callListView: some View {
         LazyVStack(spacing: 0) {
-            ForEach(filteredCalls) { call in
-                CallListItemView(callRecord: call)
-                    .padding(.horizontal, 20)
+            // Debug toggle (only visible in debug builds)
+
+
+            // Loading state
+            if dataManager.isLoadingCalls {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Loading calls...")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(FigmaColorTokens.textSecondary)
+                }
+                .padding(.vertical, 20)
+            }
+
+            // Error state
+            else if let error = dataManager.callsError {
+                VStack(spacing: 12) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 24))
+                        .foregroundColor(.orange)
+
+                    Text("Failed to load calls")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
+
+                    Text(error)
+                        .font(.system(size: 14))
+                        .foregroundColor(FigmaColorTokens.textSecondary)
+                        .multilineTextAlignment(.center)
+
+                    Button("Retry") {
+                        Task {
+                            await dataManager.refreshCalls()
+                        }
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.blue)
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 20)
+            }
+
+            // Call list
+            else {
+                ForEach(filteredCalls) { call in
+                    CallListItemView(callRecord: call, isDetailViewPresented: $isDetailViewPresented)
+                        .padding(.horizontal, 20)
+                }
+
+                // Empty state
+                if filteredCalls.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "phone")
+                            .font(.system(size: 32))
+                            .foregroundColor(FigmaColorTokens.textSecondary)
+
+                        Text("No calls found")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(FigmaColorTokens.textPrimary)
+
+                        if selectedFilter == "Missed" {
+                            Text("No missed calls")
+                                .font(.system(size: 14))
+                                .foregroundColor(FigmaColorTokens.textSecondary)
+                        } else {
+                            Text("Your call history will appear here")
+                                .font(.system(size: 14))
+                                .foregroundColor(FigmaColorTokens.textSecondary)
+                        }
+                    }
+                    .padding(.vertical, 40)
+                }
             }
         }
         .padding(.top, 4)
     }
 
     private var filteredCalls: [CallRecord] {
-        let calls = CallRecord.sampleData
         if selectedFilter == "Missed" {
-            return calls.filter { $0.isMissed }
+            return dataManager.callRecords.filter { $0.isMissed }
         }
-        return calls
+        return dataManager.callRecords
     }
+
+
 }
 
 #Preview {
-    CallsView()
+    CallsView(isDetailViewPresented: .constant(false))
         .environmentObject(AuthenticationManager())
 }

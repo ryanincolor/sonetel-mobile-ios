@@ -11,7 +11,7 @@ struct CallOptionsView: View {
     let contact: Contact
     @Environment(\.dismiss) private var dismiss
     @State private var selectedCallerId = "Personal"
-    @State private var selectedCallMethod: CallMethod = .internet
+    @State private var selectedCallMethod: CallMethodType = .internet
     @State private var showCallerIdSelection = false
     @State private var showCallMethodSelection = false
     @State private var showActiveCall = false
@@ -32,19 +32,15 @@ struct CallOptionsView: View {
                 contentView
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .clipShape(RoundedRectangle(cornerRadius: 32))
-        .sheet(isPresented: $showCallerIdSelection) {
-            CallerIdSelectionView(selectedCallerId: $selectedCallerId)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.hidden)
+        .navigationDestination(isPresented: $showCallerIdSelection) {
+            CallerIdSelectionView(selectedCallerId: $selectedCallerId, selectionType: .outgoing)
         }
-        .sheet(isPresented: $showCallMethodSelection) {
+        .navigationDestination(isPresented: $showCallMethodSelection) {
             CallMethodSelectionView(selectedMethod: $selectedCallMethod)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.hidden)
         }
-        .fullScreenCover(isPresented: $showActiveCall) {
+        .navigationDestination(isPresented: $showActiveCall) {
             ActiveCallView(phoneNumber: contact.phoneNumber ?? "")
         }
     }
@@ -55,7 +51,7 @@ struct CallOptionsView: View {
 
             Text("Call options")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
                 .tracking(-0.4)
 
             Spacer()
@@ -68,13 +64,13 @@ struct CallOptionsView: View {
 
                     Image(systemName: "xmark")
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
             }
         }
         .padding(.horizontal, 20)
         .frame(height: 72)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
     }
 
     private var contentView: some View {
@@ -88,7 +84,7 @@ struct CallOptionsView: View {
             // Pricing info
             Text("$0.01 per minute")
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                .foregroundColor(FigmaColorTokens.textSecondary)
                 .tracking(-0.32)
         }
         .padding(.horizontal, 20)
@@ -105,7 +101,7 @@ struct CallOptionsView: View {
                 HStack {
                     Text("Show")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                         .tracking(-0.36)
 
                     Spacer()
@@ -148,12 +144,12 @@ struct CallOptionsView: View {
 
                         Text(selectedPhoneNumber?.fullNumber ?? selectedCallerId)
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                            .foregroundColor(FigmaColorTokens.textPrimary)
                             .tracking(-0.36)
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                            .foregroundColor(FigmaColorTokens.textPrimary)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -170,10 +166,10 @@ struct CallOptionsView: View {
             .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
                 isCallerIdPressed = pressing
             }, perform: {})
-            .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+            .background(FigmaColorTokens.adaptiveT1)
             .overlay(
                 Rectangle()
-                    .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+                    .fill(FigmaColorTokens.adaptiveT1)
                     .frame(height: 1),
                 alignment: .bottom
             )
@@ -185,7 +181,7 @@ struct CallOptionsView: View {
                 HStack {
                     Text("Call method")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                         .tracking(-0.36)
 
                     Spacer()
@@ -193,16 +189,16 @@ struct CallOptionsView: View {
                     HStack(spacing: 8) {
                         Image(systemName: selectedCallMethod.iconName)
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                            .foregroundColor(FigmaColorTokens.textPrimary)
 
                         Text(selectedCallMethod.displayName)
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                            .foregroundColor(FigmaColorTokens.textPrimary)
                             .tracking(-0.36)
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                            .foregroundColor(FigmaColorTokens.textPrimary)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -219,7 +215,7 @@ struct CallOptionsView: View {
             .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
                 isCallMethodPressed = pressing
             }, perform: {})
-            .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+            .background(FigmaColorTokens.adaptiveT1)
         }
         .cornerRadius(20)
     }
@@ -237,7 +233,7 @@ struct CallOptionsView: View {
                 .tracking(-0.36)
                 .frame(maxWidth: .infinity)
                 .frame(height: 48)
-                .background(Color(red: 0.039, green: 0.039, blue: 0.039))
+                .background(FigmaColorTokens.textPrimary)
                 .cornerRadius(36)
         }
         .buttonStyle(PlainButtonStyle())

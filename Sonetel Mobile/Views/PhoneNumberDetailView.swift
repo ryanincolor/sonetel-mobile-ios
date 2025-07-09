@@ -21,7 +21,9 @@ struct PhoneNumberDetailView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            headerView
+            NavigationHeaderView(title: phoneNumber.category == .personal ? "Personal Number" : "Sonetel Number") {
+                dismiss()
+            }
 
             // Content
             ScrollView {
@@ -29,7 +31,7 @@ struct PhoneNumberDetailView: View {
                     // Phone number card
                     phoneNumberCardView
 
-                    // Settings menu
+                    // Settings menu - only for Sonetel numbers
                     if phoneNumber.category == .sonetel {
                         settingsMenuView
                     }
@@ -39,7 +41,8 @@ struct PhoneNumberDetailView: View {
                 .padding(.bottom, 64)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
+        .navigationBarHidden(true)
         .sheet(isPresented: $showingCallForwardingSelection) {
             CallForwardingSelectionView(
                 selectedNumber: $selectedForwardingNumber,
@@ -48,60 +51,20 @@ struct PhoneNumberDetailView: View {
         }
     }
 
-    private var headerView: some View {
-        HStack {
-            Button(action: { dismiss() }) {
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                        .frame(width: 44, height: 44)
 
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.black)
-                }
-            }
-
-            Spacer()
-
-            Text(phoneNumber.category == .personal ? "Personal number" : "Sonetel number")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.black)
-                .tracking(-0.4)
-
-            Spacer()
-
-            // Invisible spacer for balance
-            Circle()
-                .fill(Color.clear)
-                .frame(width: 44, height: 44)
-        }
-        .padding(.horizontal, 20)
-        .frame(height: 72)
-        .background(Color.white)
-        .overlay(
-            Rectangle()
-                .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                .frame(height: 1),
-            alignment: .bottom
-        )
-    }
 
     private var phoneNumberCardView: some View {
         VStack(spacing: 20) {
-            // Flag
-            AsyncImage(url: URL(string: phoneNumber.flagImageURL)) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-            } placeholder: {
-                ZStack {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
+            // Flag - emoji fills the circle completely
+            ZStack {
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 64, height: 64)
 
-                    Text(phoneNumber.flagEmoji)
-                        .font(.system(size: 32))
-                }
+                Text(phoneNumber.flagEmoji)
+                    .font(.system(size: 80))
+                    .scaleEffect(2.0)
+                    .clipped()
             }
             .frame(width: 64, height: 64)
             .clipShape(Circle())
@@ -126,21 +89,23 @@ struct PhoneNumberDetailView: View {
         .padding(.horizontal, 20)
         .padding(.top, 48)
         .padding(.bottom, 20)
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-        .cornerRadius(20)
+        .background(FigmaColorTokens.adaptiveT1)
+        .clipShape(RoundedRectangle(cornerRadius: FigmaBorderRadiusTokens.large))
     }
 
     private var settingsMenuView: some View {
         VStack(spacing: 0) {
-            SettingsMenuItemView(
+            MenuItemView(
                 title: "Forward calls to",
-                value: formatPhoneNumber(selectedForwardingNumber)
+                value: formatPhoneNumber(selectedForwardingNumber),
+                type: .navigation,
+                hasDivider: false
             ) {
                 showingCallForwardingSelection = true
             }
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-        .cornerRadius(20)
+        .background(FigmaColorTokens.adaptiveT1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     private func formatPhoneNumber(_ number: String) -> String {
@@ -175,7 +140,7 @@ struct CallForwardingSelectionView: View {
             .padding(.top, 28)
             .frame(maxHeight: .infinity)
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .ignoresSafeArea(.all, edges: .top)
     }
 
@@ -183,7 +148,7 @@ struct CallForwardingSelectionView: View {
         VStack(spacing: 0) {
             // Status bar spacer
             Rectangle()
-                .fill(Color.white)
+                .fill(FigmaColorTokens.surfacePrimary)
                 .frame(height: 50)
 
             // Header content
@@ -211,7 +176,7 @@ struct CallForwardingSelectionView: View {
             }
             .padding(.horizontal, 20)
             .frame(height: 75)
-            .background(Color.white)
+            .background(FigmaColorTokens.surfacePrimary)
             .overlay(
                 Rectangle()
                     .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
@@ -266,14 +231,14 @@ struct CallForwardingSelectionView: View {
 
                 if index < availableNumbers.count - 1 {
                     Rectangle()
-                        .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+                        .fill(FigmaColorTokens.adaptiveT1)
                         .frame(height: 1)
                         .padding(.horizontal, 16)
                 }
             }
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-        .cornerRadius(20)
+        .background(FigmaColorTokens.adaptiveT1)
+        .clipShape(RoundedRectangle(cornerRadius: FigmaBorderRadiusTokens.large))
     }
 }
 

@@ -35,7 +35,7 @@ struct LanguageSelectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            ModalHeaderView(title: "Language", hasBackButton: true, useSettingsStyle: true) {
+            NavigationHeaderView(title: "Language") {
                 dismiss()
             }
 
@@ -49,7 +49,8 @@ struct LanguageSelectionView: View {
                 .padding(.bottom, 40)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
+        .navigationBarHidden(true)
         .navigationBarHidden(true)
     }
 
@@ -66,12 +67,12 @@ struct LanguageSelectionView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(language.name)
                                 .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                                 .tracking(-0.36)
 
                             Text(language.nativeName)
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                                .foregroundColor(FigmaColorTokens.textSecondary)
                                 .tracking(-0.32)
                         }
 
@@ -80,7 +81,7 @@ struct LanguageSelectionView: View {
                         if language.code == currentLanguage {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.black)
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -93,13 +94,13 @@ struct LanguageSelectionView: View {
 
                 if index < languages.count - 1 {
                     Rectangle()
-                        .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+                        .fill(FigmaColorTokens.adaptiveT1)
                         .frame(height: 1)
                         .padding(.horizontal, 16)
                 }
             }
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(20)
     }
 }

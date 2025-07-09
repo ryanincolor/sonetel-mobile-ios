@@ -9,14 +9,15 @@ import SwiftUI
 
 struct PhoneNumbersView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var personalNumbers = PhoneNumber.sampleData.filter { $0.category == .personal }
-    @State private var sonetelNumbers = PhoneNumber.sampleData.filter { $0.category == .sonetel }
-    @State private var selectedPhoneNumber: PhoneNumber?
+    @EnvironmentObject var authManager: AuthenticationManager
+    @StateObject private var dataManager = DataManager.shared
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            headerView
+            NavigationHeaderView(title: "Phone numbers", showBackButton: true) {
+                dismiss()
+            }
 
             // Content
             ScrollView {
@@ -32,175 +33,196 @@ struct PhoneNumbersView: View {
                 .padding(.bottom, 40)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .navigationBarHidden(true)
-        .sheet(item: $selectedPhoneNumber) { phoneNumber in
-            PhoneNumberDetailView(phoneNumber: phoneNumber)
+        .task {
+            await dataManager.loadPhoneNumbersIfEmpty()
         }
-    }
-
-    private var headerView: some View {
-        HStack {
-            Button(action: { dismiss() }) {
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                        .frame(width: 44, height: 44)
-
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.black)
-                }
-            }
-
-            Spacer()
-
-            Text("Phone numbers")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.black)
-                .tracking(-0.4)
-
-            Spacer()
-
-            // Invisible spacer for balance
-            Circle()
-                .fill(Color.clear)
-                .frame(width: 44, height: 44)
+        .refreshable {
+            await dataManager.refreshPhoneNumbers()
         }
-        .padding(.horizontal, 20)
-        .frame(height: 72)
-        .background(Color.white)
-        .overlay(
-            Rectangle()
-                .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                .frame(height: 1),
-            alignment: .bottom
-        )
     }
 
     private var personalSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 0) {
             // Section header
             HStack {
                 Text("Personal")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                 Spacer()
             }
+            .padding(.bottom, 8)
 
-            // Personal numbers
-            VStack(spacing: 0) {
-                ForEach(personalNumbers) { phoneNumber in
-                    PhoneNumberRowView(
-                        phoneNumber: phoneNumber,
-                        showFlag: false
-                    ) {
-                        selectedPhoneNumber = phoneNumber
-                    }
-
-                    if phoneNumber.id != personalNumbers.last?.id {
-                        Rectangle()
-                            .fill(Color(red: 0.878, green: 0.878, blue: 0.878))
-                            .frame(height: 1)
-                    }
-                }
+            // Content based on state
+            if shouldShowLoading {
+                loadingView
+            } else if shouldShowError {
+                errorView
+            } else {
+                personalNumbersList
             }
-            .background(Color(red: 0.953, green: 0.953, blue: 0.953))
-            .cornerRadius(20)
         }
     }
 
     private var sonetelSection: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 0) {
             // Section header
             HStack {
                 Text("Sonetel")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                 Spacer()
             }
+            .padding(.bottom, 8)
 
-            // Sonetel numbers
+            // Content - show cached data instantly
             VStack(spacing: 0) {
-                ForEach(sonetelNumbers) { phoneNumber in
-                    PhoneNumberRowView(
-                        phoneNumber: phoneNumber,
-                        showFlag: true
-                    ) {
-                        selectedPhoneNumber = phoneNumber
-                    }
+                ForEach(Array(dataManager.sonetelPhoneNumbers.enumerated()), id: \.offset) { index, phoneNumber in
+                    NavigationLink(destination: SonetelPhoneNumberDetailView(phoneNumber: phoneNumber)) {
+                        MenuItemView(
+                            title: phoneNumber.cleanDisplayLabel,
+                            value: phoneNumber.number,
+                            type: .navigation,
+                            isSelected: false,
+                            hasDivider: index < dataManager.sonetelPhoneNumbers.count - 1,
+                            leftIcon: AnyView(
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.clear)
+                                        .frame(width: 24, height: 24)
 
-                    if phoneNumber.id != sonetelNumbers.last?.id {
-                        Rectangle()
-                            .fill(Color(red: 0.878, green: 0.878, blue: 0.878))
-                            .frame(height: 1)
+                                    Text(phoneNumber.flagEmoji)
+                                        .font(.system(size: 28))
+                                        .scaleEffect(1.8)
+                                        .clipped()
+                                }
+                                .frame(width: 24, height: 24)
+                                .clipShape(Circle())
+                            ),
+                            action: nil
+                        )
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
-            .background(Color(red: 0.953, green: 0.953, blue: 0.953))
-            .cornerRadius(20)
+            .background(FigmaColorTokens.surfaceSecondary)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
+    }
+
+    // MARK: - State Computed Properties
+
+    private var shouldShowLoading: Bool {
+        dataManager.isLoadingPhoneNumbers && dataManager.personalPhoneNumbers.isEmpty
+    }
+
+    private var shouldShowError: Bool {
+        dataManager.phoneNumbersError != nil && dataManager.personalPhoneNumbers.isEmpty
+    }
+
+    private var personalNumbersList: some View {
+        VStack(spacing: 0) {
+            ForEach(dataManager.personalPhoneNumbers.indices, id: \.self) { index in
+                PersonalNumberRowView(
+                    phoneNumber: dataManager.personalPhoneNumbers[index],
+                    hasDivider: index < dataManager.personalPhoneNumbers.count - 1
+                )
+            }
+        }
+        .background(FigmaColorTokens.surfaceSecondary)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+
+    private var loadingView: some View {
+        HStack {
+            ProgressView()
+                .scaleEffect(0.8)
+            Text("Loading phone numbers...")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(FigmaColorTokens.textSecondary)
+        }
+        .padding(.vertical, 20)
+    }
+
+    private var errorView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 24))
+                .foregroundColor(.orange)
+
+            Text("Failed to load phone numbers")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(FigmaColorTokens.textPrimary)
+
+            if let error = dataManager.phoneNumbersError {
+                Text(error)
+                    .font(.system(size: 14))
+                    .foregroundColor(FigmaColorTokens.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button("Retry") {
+                Task {
+                    await dataManager.refreshPhoneNumbers()
+                }
+            }
+            .font(.system(size: 14, weight: .medium))
+            .foregroundColor(.blue)
+        }
+        .padding(.vertical, 20)
     }
 }
 
-struct PhoneNumberRowView: View {
-    let phoneNumber: PhoneNumber
-    let showFlag: Bool
-    let onTap: () -> Void
-
-    @State private var isPressed = false
+struct PersonalNumberRowView: View {
+    let phoneNumber: SonetelPhoneNumber
+    let hasDivider: Bool
 
     var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                // Flag (if applicable)
-                if showFlag {
+        NavigationLink(destination: PhoneNumberDetailView(phoneNumber: convertToPhoneNumber(phoneNumber))) {
+            MenuItemView(
+                title: phoneNumber.cleanDisplayLabel,
+                value: phoneNumber.number,
+                type: .navigation,
+                isSelected: false,
+                hasDivider: hasDivider,
+                leftIcon: AnyView(
                     ZStack {
                         Circle()
-                            .fill(Color.gray.opacity(0.3))
+                            .fill(Color.clear)
                             .frame(width: 24, height: 24)
 
                         Text(phoneNumber.flagEmoji)
-                            .font(.system(size: 14))
+                            .font(.system(size: 28))
+                            .scaleEffect(1.8)
+                            .clipped()
                     }
-                }
-
-                // Label
-                Text(phoneNumber.label)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
-
-                Spacer()
-
-                // Phone number
-                Text(phoneNumber.number)
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
-
-                // Chevron
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
-            .frame(minHeight: 56)
-            .frame(maxWidth: .infinity) // Fill width
-            .contentShape(Rectangle()) // Make entire area tappable
+                    .frame(width: 24, height: 24)
+                    .clipShape(Circle())
+                ),
+                action: nil
+            )
         }
         .buttonStyle(PlainButtonStyle())
-        .background(
-            Rectangle()
-                .fill(isPressed ? Color.black.opacity(0.05) : Color.clear)
+    }
+
+    private func convertToPhoneNumber(_ sonetelNumber: SonetelPhoneNumber) -> PhoneNumber {
+        return PhoneNumber(
+            label: sonetelNumber.cleanDisplayLabel,
+            number: sonetelNumber.number,
+            fullNumber: sonetelNumber.number,
+            countryCode: sonetelNumber.country ?? "SE",
+            flagEmoji: sonetelNumber.flagEmoji,
+            category: .personal,
+            location: sonetelNumber.location ?? "",
+            isVerified: true
         )
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
-            isPressed = pressing
-        }, perform: {})
     }
 }
 
+
+
 #Preview {
-    NavigationStack {
-        PhoneNumbersView()
-    }
+    PhoneNumbersView()
+        .environmentObject(AuthenticationManager())
 }

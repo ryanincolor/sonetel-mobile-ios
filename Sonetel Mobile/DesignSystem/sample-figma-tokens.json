@@ -1,0 +1,272 @@
+{
+  "version": "1.0.0",
+  "description": "Sample Figma Variables Export",
+  "color": {
+    "primitive": {
+      "white": {
+        "value": "#FFFFFF",
+        "type": "color",
+        "description": "Pure white color"
+      },
+      "black": {
+        "value": "#000000",
+        "type": "color",
+        "description": "Pure black color"
+      },
+      "gray-50": {
+        "value": "#FAFAFA",
+        "type": "color"
+      },
+      "gray-100": {
+        "value": "#F5F5F5",
+        "type": "color"
+      },
+      "gray-200": {
+        "value": "#F3F3F3",
+        "type": "color"
+      },
+      "gray-300": {
+        "value": "#E0E0E0",
+        "type": "color"
+      },
+      "gray-900": {
+        "value": "#111111",
+        "type": "color"
+      },
+      "blue-500": {
+        "value": "#2196F3",
+        "type": "color"
+      },
+      "red-500": {
+        "value": "#F44336",
+        "type": "color"
+      },
+      "green-500": {
+        "value": "#4CAF50",
+        "type": "color"
+      }
+    },
+    "semantic": {
+      "surface": {
+        "primary": {
+          "value": "{color.primitive.white}",
+          "type": "color",
+          "description": "Primary surface background"
+        },
+        "secondary": {
+          "value": "{color.primitive.gray-200}",
+          "type": "color",
+          "description": "Secondary surface background"
+        },
+        "border": {
+          "value": "{color.primitive.gray-100}",
+          "type": "color"
+        }
+      },
+      "text": {
+        "primary": {
+          "value": "{color.primitive.gray-900}",
+          "type": "color",
+          "description": "Primary text color"
+        },
+        "secondary": {
+          "value": "#0A0A0A",
+          "type": "color",
+          "description": "Secondary text color"
+        },
+        "tertiary": {
+          "value": "rgba(0, 0, 0, 0.6)",
+          "type": "color"
+        }
+      },
+      "interactive": {
+        "primary": {
+          "value": "{color.primitive.blue-500}",
+          "type": "color"
+        },
+        "destructive": {
+          "value": "{color.primitive.red-500}",
+          "type": "color"
+        },
+        "pressed": {
+          "value": "rgba(0, 0, 0, 0.08)",
+          "type": "color"
+        }
+      },
+      "status": {
+        "success": {
+          "value": "{color.primitive.green-500}",
+          "type": "color"
+        },
+        "error": {
+          "value": "{color.primitive.red-500}",
+          "type": "color"
+        }
+      }
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "primary": {
+        "value": "Inter",
+        "type": "fontFamily"
+      }
+    },
+    "fontWeight": {
+      "regular": {
+        "value": "400",
+        "type": "fontWeight"
+      },
+      "medium": {
+        "value": "500",
+        "type": "fontWeight"
+      },
+      "semibold": {
+        "value": "600",
+        "type": "fontWeight"
+      },
+      "bold": {
+        "value": "700",
+        "type": "fontWeight"
+      }
+    },
+    "fontSize": {
+      "h1": {
+        "value": "34px",
+        "type": "fontSize"
+      },
+      "h2": {
+        "value": "28px",
+        "type": "fontSize"
+      },
+      "h3": {
+        "value": "24px",
+        "type": "fontSize"
+      },
+      "h4": {
+        "value": "22px",
+        "type": "fontSize"
+      },
+      "h5": {
+        "value": "20px",
+        "type": "fontSize"
+      },
+      "h6": {
+        "value": "18px",
+        "type": "fontSize"
+      },
+      "body-large": {
+        "value": "18px",
+        "type": "fontSize"
+      },
+      "body-medium": {
+        "value": "16px",
+        "type": "fontSize"
+      },
+      "body-small": {
+        "value": "14px",
+        "type": "fontSize"
+      },
+      "label-large": {
+        "value": "16px",
+        "type": "fontSize"
+      },
+      "label-medium": {
+        "value": "14px",
+        "type": "fontSize"
+      },
+      "label-small": {
+        "value": "12px",
+        "type": "fontSize"
+      }
+    },
+    "letterSpacing": {
+      "tight": {
+        "value": "-0.4px",
+        "type": "letterSpacing"
+      },
+      "normal": {
+        "value": "-0.36px",
+        "type": "letterSpacing"
+      },
+      "wide": {
+        "value": "0.374px",
+        "type": "letterSpacing"
+      }
+    }
+  },
+  "spacing": {
+    "scale": {
+      "xs": {
+        "value": "4px",
+        "type": "spacing"
+      },
+      "sm": {
+        "value": "8px",
+        "type": "spacing"
+      },
+      "md": {
+        "value": "12px",
+        "type": "spacing"
+      },
+      "lg": {
+        "value": "16px",
+        "type": "spacing"
+      },
+      "xl": {
+        "value": "20px",
+        "type": "spacing"
+      },
+      "xxl": {
+        "value": "24px",
+        "type": "spacing"
+      }
+    },
+    "component": {
+      "screen-padding": {
+        "value": "20px",
+        "type": "spacing"
+      },
+      "card-padding": {
+        "value": "16px",
+        "type": "spacing"
+      },
+      "list-item-height": {
+        "value": "56px",
+        "type": "spacing"
+      },
+      "header-height": {
+        "value": "72px",
+        "type": "spacing"
+      }
+    }
+  },
+  "borderRadius": {
+    "sm": {
+      "value": "8px",
+      "type": "borderRadius"
+    },
+    "md": {
+      "value": "12px",
+      "type": "borderRadius"
+    },
+    "lg": {
+      "value": "16px",
+      "type": "borderRadius"
+    },
+    "xl": {
+      "value": "20px",
+      "type": "borderRadius"
+    },
+    "component": {
+      "button": {
+        "value": "36px",
+        "type": "borderRadius"
+      },
+      "card": {
+        "value": "20px",
+        "type": "borderRadius"
+      }
+    }
+  }
+}

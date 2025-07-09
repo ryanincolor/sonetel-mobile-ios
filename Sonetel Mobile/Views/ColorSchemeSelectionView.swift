@@ -20,7 +20,9 @@ struct ColorSchemeSelectionView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            headerView
+            NavigationHeaderView(title: "Appearance") {
+                dismiss()
+            }
 
             // Content
             VStack(spacing: 0) {
@@ -31,51 +33,11 @@ struct ColorSchemeSelectionView: View {
             .padding(.top, 28)
             .frame(maxHeight: .infinity)
         }
-        .background(Color.white)
-        .ignoresSafeArea(.all, edges: .top)
+        .background(FigmaColorTokens.surfacePrimary)
+        .navigationBarHidden(true)
     }
 
-    private var headerView: some View {
-        VStack(spacing: 0) {
-            // Status bar spacer
-            Rectangle()
-                .fill(Color.white)
-                .frame(height: 50)
 
-            // Header content
-            HStack {
-                Spacer()
-
-                Text("Color scheme")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black)
-                    .tracking(-0.36)
-
-                Spacer()
-
-                Button(action: { dismiss() }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                            .frame(width: 32, height: 32)
-
-                        Image(systemName: "xmark")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.black)
-                    }
-                }
-            }
-            .padding(.horizontal, 20)
-            .frame(height: 75)
-            .background(Color.white)
-            .overlay(
-                Rectangle()
-                    .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                    .frame(height: 1),
-                alignment: .bottom
-            )
-        }
-    }
 
     private var menuView: some View {
         VStack(spacing: 0) {
@@ -91,18 +53,18 @@ struct ColorSchemeSelectionView: View {
                         // Icon
                         Image(systemName: scheme.systemImage)
                             .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.black)
+                            .foregroundColor(FigmaColorTokens.textPrimary)
                             .frame(width: 20)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(scheme.name)
                                 .font(.system(size: 18, weight: .medium))
-                                .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                                 .tracking(-0.36)
 
                             Text(scheme.description)
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                                .foregroundColor(FigmaColorTokens.textSecondary)
                                 .tracking(-0.32)
                         }
 
@@ -111,7 +73,7 @@ struct ColorSchemeSelectionView: View {
                         if scheme.id == selectedColorScheme {
                             Image(systemName: "checkmark")
                                 .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.black)
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -124,13 +86,13 @@ struct ColorSchemeSelectionView: View {
 
                 if index < colorSchemes.count - 1 {
                     Rectangle()
-                        .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+                        .fill(FigmaColorTokens.adaptiveT1)
                         .frame(height: 1)
                         .padding(.horizontal, 16)
                 }
             }
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(20)
     }
 

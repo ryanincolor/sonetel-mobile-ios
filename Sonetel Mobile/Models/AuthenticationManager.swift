@@ -22,11 +22,13 @@ class AuthenticationManager: ObservableObject {
 
      This allows for rapid testing without having to complete the login flow every time.
      */
-    private let isDevelopmentMode: Bool = true // Change to false for production
+    private let isDevelopmentMode: Bool = false // Change to true for development mode
 
     @Published var isAuthenticated: Bool = false
     @Published var hasCompletedOnboarding: Bool = false
     @Published var currentUser: AuthenticatedUser?
+    @Published var accountInfo: AccountInfo?
+    @Published var userProfile: SonetelUserProfile?
 
     enum AuthenticationStep {
         case welcome
@@ -61,7 +63,64 @@ class AuthenticationManager: ObservableObject {
         if isDevelopmentMode {
             // Auto-authenticate for development
             setupDevelopmentUser()
+        } else {
+            // Disabled automatic session restoration to prevent auto sign-in
+            // Users must manually sign in each time
+            print("ℹ️ AuthenticationManager: Auto sign-in disabled, user must sign in manually")
         }
+    }
+
+    /// Check if user is already authenticated and restore session
+    private func checkExistingAuthentication() {
+        // Only check for existing authentication if we have stored tokens
+        guard SonetelAPIService.shared.isAuthenticated else {
+            print("ℹ️ No stored authentication tokens found")
+            return
+        }
+
+        print("🔍 Found stored tokens, validating authentication...")
+
+        Task {
+            do {
+                // Try to get account info with existing tokens
+                let accountInfo = try await SonetelAPIService.shared.getAccountInfo()
+
+                await MainActor.run {
+                    // Restore authenticated state only if account info was successfully retrieved
+                    self.isAuthenticated = true
+                    self.hasCompletedOnboarding = true
+                    self.accountInfo = accountInfo
+                    self.currentUser = AuthenticatedUser(
+                        email: accountInfo.email ?? "",
+                        phoneNumber: accountInfo.phone_number ?? "",
+                        name: accountInfo.name
+                    )
+                    self.currentStep = .completed
+                    self.hasNotificationPermission = true
+                    self.hasContactsPermission = true
+
+                    print("✅ Restored authentication session for: \(accountInfo.email ?? "Unknown")")
+                }
+            } catch {
+                // Clear invalid stored authentication data
+                print("⚠️ Stored authentication is invalid, clearing tokens: \(error)")
+                await MainActor.run {
+                    SonetelAPIService.shared.clearTokens()
+                    self.resetToWelcomeScreen()
+                }
+            }
+        }
+    }
+
+    /// Reset authentication state to welcome screen
+    private func resetToWelcomeScreen() {
+        isAuthenticated = false
+        hasCompletedOnboarding = false
+        currentUser = nil
+        accountInfo = nil
+        currentStep = .welcome
+        resetState()
+        print("🔄 Reset to welcome screen")
     }
 
     private func setupDevelopmentUser() {
@@ -103,19 +162,99 @@ class AuthenticationManager: ObservableObject {
             return
         }
 
+        print("🔐 AuthManager: Starting sign in process for: \(email)")
         isLoading = true
         errorMessage = nil
 
-        // Simulate API call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.isLoading = false
+        Task {
+            do {
+                print("🔐 AuthManager: Testing connectivity to Sonetel...")
 
-            // Simulate authentication success - be more lenient with email comparison
-            let normalizedEmail = self.email.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-            if normalizedEmail == "joanna@taylored.com" && self.password == "password123" {
-                self.currentStep = .phoneEntry
-            } else {
-                self.errorMessage = "Invalid email or password"
+                // Test connectivity first
+                let isConnected = try await SonetelAPIService.shared.testConnectivity()
+                if !isConnected {
+                    throw SonetelAPIError.networkError("Cannot reach Sonetel servers")
+                }
+
+                print("🔐 AuthManager: Calling Sonetel API for authentication...")
+
+                // Authenticate with Sonetel API
+                _ = try await SonetelAPIService.shared.createToken(
+                    email: email,
+                    password: password
+                )
+
+                print("✅ AuthManager: Token creation completed")
+                print("🔐 AuthManager: API service authenticated: \(SonetelAPIService.shared.isAuthenticated)")
+                print("✅ AuthManager: Getting account info...")
+
+                // Get account information
+                let accountInfo = try await SonetelAPIService.shared.getAccountInfo(userEmail: self.email)
+                print("✅ AuthManager: Account info received successfully")
+
+                // Get user profile information
+                print("🔍 AuthManager: Fetching user profile data...")
+                let userProfile = try await SonetelAPIService.shared.getUserProfile()
+                print("✅ AuthManager: User profile received successfully")
+
+                print("✅ AuthManager: Account info received, updating UI...")
+
+                // Authentication successful
+                await MainActor.run {
+                    self.isLoading = false
+
+                    // Store account info and user profile
+                    self.accountInfo = accountInfo
+                    self.userProfile = userProfile
+
+                    // Update current user with real account and profile data
+                    let displayName = userProfile.full_name ?? userProfile.first_name ?? accountInfo.name
+                    let phoneNumber = userProfile.phone ?? userProfile.mobile ?? accountInfo.phone_number ?? ""
+
+                    self.currentUser = AuthenticatedUser(
+                        email: userProfile.email ?? accountInfo.email ?? self.email,
+                        phoneNumber: phoneNumber,
+                        name: displayName
+                    )
+
+                    print("✅ AuthManager: User created: \(self.currentUser?.email ?? "unknown")")
+
+                    // If user has a verified phone number, skip phone entry
+                    if let phoneNumber = accountInfo.phone_number, !phoneNumber.isEmpty, accountInfo.verified == true {
+                        self.phoneNumber = phoneNumber
+                        self.currentStep = .permissions
+                        print("✅ AuthManager: Verified user, skipping to permissions")
+                    } else {
+                        self.currentStep = .phoneEntry
+                        print("✅ AuthManager: Unverified user, going to phone entry")
+                    }
+                }
+
+            } catch let error as SonetelAPIError {
+                print("❌ AuthManager: Sonetel API error: \(error)")
+                await MainActor.run {
+                    self.isLoading = false
+                    switch error {
+                    case .authenticationFailed(let message):
+                        self.errorMessage = message.contains("invalid_grant") ?
+                            "Invalid email or password" : message
+                    case .networkError(let message):
+                        self.errorMessage = "Network error: \(message)"
+                    case .unauthorizedAccess:
+                        self.errorMessage = "Unauthorized access - please check your credentials"
+                        print("❌ AuthManager: Unauthorized access error occurred")
+                    default:
+                        self.errorMessage = error.localizedDescription
+                    }
+                    print("❌ AuthManager: Error message set to: \(self.errorMessage ?? "none")")
+                }
+            } catch {
+                print("❌ AuthManager: General error: \(error)")
+                await MainActor.run {
+                    self.isLoading = false
+                    self.errorMessage = "Connection failed: \(error.localizedDescription)"
+                    print("❌ AuthManager: Error message set to: \(self.errorMessage ?? "none")")
+                }
             }
         }
     }
@@ -218,7 +357,13 @@ class AuthenticationManager: ObservableObject {
         isAuthenticated = false
         hasCompletedOnboarding = false
         currentUser = nil
+        accountInfo = nil
+        userProfile = nil
         currentStep = .welcome
+
+        // Clear API tokens
+        SonetelAPIService.shared.clearTokens()
+
         resetState()
     }
 
@@ -229,13 +374,172 @@ class AuthenticationManager: ObservableObject {
         setupDevelopmentUser()
     }
 
+    /// Development quick login with real API authentication
+    func devQuickLogin() {
+        isLoading = true
+        errorMessage = nil
+
+        Task {
+            do {
+                print("🚀 Development Quick Login: Authenticating with real API...")
+
+                // Use hardcoded development credentials
+                let devEmail = "appdev@sonetell.com"
+                let devPassword = "test1234"
+
+                // Test connectivity first
+                let isConnected = try await SonetelAPIService.shared.testConnectivity()
+                if !isConnected {
+                    throw SonetelAPIError.networkError("Cannot reach Sonetel servers")
+                }
+
+                // Authenticate with Sonetel API
+                _ = try await SonetelAPIService.shared.createToken(
+                    email: devEmail,
+                    password: devPassword
+                )
+
+                // Get account information
+                let accountInfo = try await SonetelAPIService.shared.getAccountInfo(userEmail: devEmail)
+
+                // Get user profile information
+                let userProfile = try await SonetelAPIService.shared.getUserProfile()
+
+                // Authentication successful
+                await MainActor.run {
+                    self.isLoading = false
+                    self.accountInfo = accountInfo
+                    self.userProfile = userProfile
+
+                    // Update current user with real account and profile data
+                    let displayName = userProfile.full_name ?? userProfile.first_name ?? accountInfo.name
+                    let phoneNumber = userProfile.phone ?? userProfile.mobile ?? accountInfo.phone_number ?? ""
+
+                    self.currentUser = AuthenticatedUser(
+                        email: userProfile.email ?? accountInfo.email ?? devEmail,
+                        phoneNumber: phoneNumber,
+                        name: displayName
+                    )
+
+                    self.email = devEmail
+                    self.isAuthenticated = true
+                    self.hasCompletedOnboarding = true
+                    self.currentStep = .completed
+                    self.hasNotificationPermission = true
+                    self.hasContactsPermission = true
+
+                    print("✅ Development Quick Login: Successfully authenticated!")
+                }
+
+            } catch {
+                await MainActor.run {
+                    self.isLoading = false
+                    self.errorMessage = "Quick login failed: \(error.localizedDescription)"
+                    print("❌ Development Quick Login failed: \(error)")
+                }
+            }
+        }
+    }
+
+    /// Dummy account login with mock data for testing UI
+    func dummyAccountLogin() {
+        isLoading = true
+        errorMessage = nil
+
+        // Simulate login delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            print("🎭 Dummy Account Login: Logging in with mock data...")
+
+            // Set up dummy account data
+            self.accountInfo = AccountInfo(
+                account_id: "999999999",
+                currency: "USD",
+                email: "demo@sonetel.com",
+                name: "Demo User",
+                phone_number: "+1234567890",
+                verified: true
+            )
+
+            self.userProfile = SonetelUserProfile(
+                user_id: "demo_user_123",
+                email: "demo@sonetel.com",
+                first_name: "Demo",
+                last_name: "User",
+                full_name: "Demo User",
+                phone: "+1234567890",
+                mobile: "+1234567890",
+                status: "active"
+            )
+
+            self.currentUser = AuthenticatedUser(
+                email: "demo@sonetel.com",
+                phoneNumber: "+1234567890",
+                name: "Demo User"
+            )
+
+            self.email = "demo@sonetel.com"
+            self.phoneNumber = "+1234567890"
+            self.isAuthenticated = true
+            self.hasCompletedOnboarding = true
+            self.currentStep = .completed
+            self.hasNotificationPermission = true
+            self.hasContactsPermission = true
+            self.isLoading = false
+
+            // Enable dummy data mode in API service
+            SonetelAPIService.shared.enableDummyDataMode()
+
+            print("✅ Dummy Account Login: Successfully logged in with mock data!")
+        }
+    }
+
     /// For development: Test the login flow by resetting authentication
     func testLoginFlow() {
-        isAuthenticated = false
-        hasCompletedOnboarding = false
-        currentUser = nil
-        currentStep = .welcome
-        resetState()
+        print("🧪 Testing login flow - clearing all authentication data")
+        SonetelAPIService.shared.clearTokens()
+        resetToWelcomeScreen()
+    }
+
+    /// Completely reset all authentication data (for debugging)
+    func completeAuthenticationReset() {
+        print("🔄 Complete authentication reset")
+        SonetelAPIService.shared.clearTokens()
+        resetToWelcomeScreen()
+    }
+
+    /// Refresh account information and user profile from Sonetel API
+    func refreshAccountInfo() {
+        Task {
+            do {
+                print("🔄 AuthManager: Refreshing account info and user profile...")
+
+                // Refresh both account info and user profile
+                async let accountInfoTask = SonetelAPIService.shared.getAccountInfo(userEmail: self.email)
+                async let userProfileTask = SonetelAPIService.shared.getUserProfile()
+
+                let (accountInfo, userProfile) = try await (accountInfoTask, userProfileTask)
+
+                await MainActor.run {
+                    self.accountInfo = accountInfo
+                    self.userProfile = userProfile
+
+                    // Update current user with fresh data from both sources
+                    let displayName = userProfile.full_name ?? userProfile.first_name ?? accountInfo.name ?? self.currentUser?.name
+                    let phoneNumber = userProfile.phone ?? userProfile.mobile ?? accountInfo.phone_number ?? self.currentUser?.phoneNumber ?? ""
+                    let email = userProfile.email ?? accountInfo.email ?? self.currentUser?.email ?? self.email
+
+                    self.currentUser = AuthenticatedUser(
+                        email: email,
+                        phoneNumber: phoneNumber,
+                        name: displayName
+                    )
+
+                    print("✅ AuthManager: Successfully refreshed account info and user profile")
+                }
+            } catch {
+                print("❌ AuthManager: Failed to refresh account info or user profile: \(error)")
+            }
+        }
     }
 
     private func resetState() {
@@ -302,7 +606,7 @@ struct Country: Identifiable, Hashable {
     let code: String
     let flag: String
 
-    static let sweden = Country(name: "Sweden", code: "+46", flag: "🇸🇪")
+    static let sweden = Country(name: "Sweden", code: "+46", flag: "���🇪")
     static let usa = Country(name: "United States", code: "+1", flag: "🇺🇸")
     static let uk = Country(name: "United Kingdom", code: "+44", flag: "🇬🇧")
     static let germany = Country(name: "Germany", code: "+49", flag: "🇩🇪")

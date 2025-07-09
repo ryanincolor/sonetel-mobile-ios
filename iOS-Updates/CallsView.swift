@@ -104,7 +104,7 @@ struct CallsView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 16)
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .overlay(
             Rectangle()
                 .fill(Color.black.opacity(0.05))
@@ -135,7 +135,7 @@ struct CallsView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.black.opacity(0.04))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(12)
         .padding(.bottom, 20)
     }

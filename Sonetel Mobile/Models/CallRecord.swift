@@ -14,12 +14,69 @@ struct CallRecord: Identifiable {
     let timestamp: String
     let avatarImageURL: String?
     let isMissed: Bool
-    let contactInitial: String
     let email: String?
     let callDate: String?
     let callTime: String?
     let callDuration: String?
     let callType: CallType
+
+    var displayName: String {
+        // If contact name looks like a generic description (contains "number"), use phone number instead
+        if contactName.lowercased().contains("number") ||
+           contactName.hasPrefix("+") ||
+           (contactName.allSatisfy { $0.isNumber || $0 == " " || $0 == "(" || $0 == ")" || $0 == "-" || $0 == "+" }) {
+            return phoneNumber ?? contactName
+        }
+        return contactName
+    }
+
+    var contactInitial: String {
+        return String(displayName.prefix(1)).uppercased()
+    }
+
+    var countryCode: String? {
+        guard let phoneNumber = phoneNumber else { return nil }
+
+        // Extract country code from phone number
+        if phoneNumber.hasPrefix("+46") { return "SE" }
+        if phoneNumber.hasPrefix("+1") { return "US" }
+        if phoneNumber.hasPrefix("+44") { return "GB" }
+        if phoneNumber.hasPrefix("+49") { return "DE" }
+        if phoneNumber.hasPrefix("+33") { return "FR" }
+        if phoneNumber.hasPrefix("+47") { return "NO" }
+        if phoneNumber.hasPrefix("+45") { return "DK" }
+        if phoneNumber.hasPrefix("+358") { return "FI" }
+        if phoneNumber.hasPrefix("+31") { return "NL" }
+        if phoneNumber.hasPrefix("+41") { return "CH" }
+        if phoneNumber.hasPrefix("+43") { return "AT" }
+        if phoneNumber.hasPrefix("+32") { return "BE" }
+        if phoneNumber.hasPrefix("+39") { return "IT" }
+        if phoneNumber.hasPrefix("+34") { return "ES" }
+
+        return nil
+    }
+
+    var flagEmoji: String? {
+        guard let country = countryCode else { return nil }
+
+        switch country.uppercased() {
+        case "SE": return "🇸🇪"
+        case "US": return "🇺🇸"
+        case "GB": return "🇬🇧"
+        case "DE": return "🇩🇪"
+        case "FR": return "🇫🇷"
+        case "NO": return "🇳🇴"
+        case "DK": return "🇩🇰"
+        case "FI": return "🇫🇮"
+        case "NL": return "🇳🇱"
+        case "CH": return "🇨🇭"
+        case "AT": return "🇦🇹"
+        case "BE": return "🇧🇪"
+        case "IT": return "🇮🇹"
+        case "ES": return "🇪🇸"
+        default: return nil
+        }
+    }
 
     enum CallType {
         case incoming
@@ -41,7 +98,7 @@ struct CallRecord: Identifiable {
         self.timestamp = timestamp
         self.avatarImageURL = avatarImageURL
         self.isMissed = isMissed
-        self.contactInitial = String(contactName.prefix(1)).uppercased()
+
         self.email = email
         self.callDate = callDate
         self.callTime = callTime

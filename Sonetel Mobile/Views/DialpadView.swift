@@ -28,12 +28,12 @@ struct DialpadView: View {
                 dialpadSection
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .navigationBarHidden(true)
-        .sheet(isPresented: $showCallerIdSelection) {
-            CallerIdSelectionView(selectedCallerId: $selectedCallerId)
+        .navigationDestination(isPresented: $showCallerIdSelection) {
+            CallerIdSelectionView(selectedCallerId: $selectedCallerId, selectionType: .outgoing)
         }
-        .fullScreenCover(isPresented: $showActiveCall) {
+        .navigationDestination(isPresented: $showActiveCall) {
             ActiveCallView(phoneNumber: enteredNumber)
         }
     }
@@ -49,7 +49,7 @@ struct DialpadView: View {
 
                     Image(systemName: "chevron.left")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
             }
 
@@ -57,7 +57,7 @@ struct DialpadView: View {
             Spacer()
             Text("New Call")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
             Spacer()
 
             // Caller ID selector
@@ -71,11 +71,11 @@ struct DialpadView: View {
 
                     Text("+46723319393")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.black)
+                        .foregroundColor(FigmaColorTokens.textPrimary)
 
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
                 .padding(.horizontal, 8)
                 .padding(.vertical, 8)
@@ -94,13 +94,13 @@ struct DialpadView: View {
 
                     Image(systemName: "globe")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
             }
         }
         .padding(.horizontal, 20)
         .frame(height: 73)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .overlay(
             Rectangle()
                 .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
@@ -113,13 +113,13 @@ struct DialpadView: View {
         VStack(spacing: 8) {
             Text(enteredNumber)
                 .font(.system(size: 40, weight: .regular))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
                 .multilineTextAlignment(.center)
 
             HStack {
                 Text("$0.027 / min")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 5)
                     .background(Color(red: 0.961, green: 0.961, blue: 0.961))
@@ -193,7 +193,7 @@ struct DialpadView: View {
 
                             Image(systemName: "delete.left")
                                 .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                         }
                     }
                     .frame(width: 72, height: 72)
@@ -214,7 +214,7 @@ struct DialpadView: View {
 
                 Text(text)
                     .font(.system(size: 34, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
             }
         }
         .buttonStyle(PlainButtonStyle())

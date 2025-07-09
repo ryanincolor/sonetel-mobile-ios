@@ -23,10 +23,10 @@ struct PhoneNumberEntryView: View {
                     contentView
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
+                .background(FigmaColorTokens.surfacePrimary)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .ignoresSafeArea(.all, edges: .top)
         .alert("Error", isPresented: .constant(authManager.errorMessage != nil)) {
             Button("OK") {
@@ -44,7 +44,7 @@ struct PhoneNumberEntryView: View {
         HStack {
             Text("9:41")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
 
             Spacer()
 
@@ -62,7 +62,7 @@ struct PhoneNumberEntryView: View {
                 // WiFi icon
                 Image(systemName: "wifi")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
 
                 // Battery
                 ZStack {
@@ -86,7 +86,7 @@ struct PhoneNumberEntryView: View {
         .padding(.horizontal, 16)
         .padding(.top, 21)
         .frame(height: 50)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
     }
 
     private var contentView: some View {
@@ -96,7 +96,7 @@ struct PhoneNumberEntryView: View {
                 // Title
                 Text("Enter your phone number")
                     .font(.system(size: 34, weight: .semibold))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .tracking(-0.68)
                     .multilineTextAlignment(.center)
 
@@ -112,13 +112,13 @@ struct PhoneNumberEntryView: View {
 
                             Text("\(authManager.selectedCountry.name) (\(authManager.selectedCountry.code))")
                                 .font(.system(size: 16, weight: .regular))
-                                .foregroundColor(.black)
+                                .foregroundColor(FigmaColorTokens.textPrimary)
 
                             Spacer()
 
                             Image(systemName: "chevron.down")
                                 .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(.black)
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
@@ -143,7 +143,7 @@ struct PhoneNumberEntryView: View {
                         HStack {
                             TextField("", text: $authManager.phoneNumber)
                                 .font(.system(size: 16, weight: .regular))
-                                .foregroundColor(.black)
+                                .foregroundColor(FigmaColorTokens.textPrimary)
                                 .focused($isPhoneNumberFocused)
                                 .keyboardType(.phonePad)
                             Spacer()
@@ -214,7 +214,7 @@ struct CountryPickerView: View {
                         VStack(alignment: .leading) {
                             Text(country.name)
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.black)
+                                .foregroundColor(FigmaColorTokens.textPrimary)
 
                             Text(country.code)
                                 .font(.system(size: 14, weight: .regular))

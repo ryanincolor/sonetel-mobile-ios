@@ -8,77 +8,71 @@
 import SwiftUI
 
 struct CallMethodSelectionView: View {
-    @Binding var selectedMethod: CallMethod
+    @Binding var selectedMethod: CallMethodType
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            ModalHeaderView(title: "Call mode", hasBackButton: true, useSettingsStyle: true) {
+            NavigationHeaderView(title: "Call mode") {
                 dismiss()
             }
 
             // Content
-            VStack(spacing: 0) {
-                contentView
-                Spacer()
+            ScrollView {
+                VStack(spacing: 24) {
+                    contentView
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 28)
+                .padding(.bottom, 40)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 28)
-            .frame(maxHeight: .infinity)
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .navigationBarHidden(true)
     }
 
     private var contentView: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 16) {
             // Menu
             menuView
 
             // Descriptive text
             Text("Make calls over the internet or through your mobile service provider.")
                 .font(.system(size: 14, weight: .regular))
-                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                .foregroundColor(FigmaColorTokens.textSecondary)
                 .lineSpacing(4)
                 .multilineTextAlignment(.leading)
-                .padding(.top, 8)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
     private var menuView: some View {
         VStack(spacing: 0) {
-            // Internet option
-            CallMethodRowView(
-                method: .internet,
-                isSelected: selectedMethod == .internet
-            ) {
-                selectedMethod = .internet
-                dismiss()
-            }
+            ForEach(CallMethodType.allCases, id: \.self) { method in
+                CallMethodRowView(
+                    method: method,
+                    isSelected: selectedMethod == method
+                ) {
+                    selectedMethod = method
+                    dismiss()
+                }
 
-            Rectangle()
-                .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                .frame(height: 1)
-                .padding(.horizontal, 16)
-
-            // Mobile option
-            CallMethodRowView(
-                method: .mobile,
-                isSelected: selectedMethod == .mobile
-            ) {
-                selectedMethod = .mobile
-                dismiss()
+                if method != CallMethodType.allCases.last {
+                    Rectangle()
+                        .fill(FigmaColorTokens.adaptiveT1)
+                        .frame(height: 1)
+                        .padding(.horizontal, 16)
+                }
             }
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(20)
     }
 }
 
 struct CallMethodRowView: View {
-    let method: CallMethod
+    let method: CallMethodType
     let isSelected: Bool
     let onTap: () -> Void
 
@@ -90,13 +84,13 @@ struct CallMethodRowView: View {
                 // Icon
                 Image(systemName: method.iconName)
                     .font(.system(size: 24, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .frame(width: 24, height: 24)
 
                 // Label
                 Text(method.displayName)
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .tracking(-0.36)
 
                 Spacer()
@@ -105,7 +99,7 @@ struct CallMethodRowView: View {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.black)
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                 }
             }
             .padding(.horizontal, 16)
@@ -124,31 +118,6 @@ struct CallMethodRowView: View {
         }, perform: {})
     }
 }
-
-enum CallMethod: String, CaseIterable {
-    case internet = "internet"
-    case mobile = "mobile"
-
-    var displayName: String {
-        switch self {
-        case .internet:
-            return "Internet"
-        case .mobile:
-            return "Mobile"
-        }
-    }
-
-    var iconName: String {
-        switch self {
-        case .internet:
-            return "globe"
-        case .mobile:
-            return "cellularbars"
-        }
-    }
-}
-
-
 
 #Preview {
     CallMethodSelectionView(selectedMethod: .constant(.internet))

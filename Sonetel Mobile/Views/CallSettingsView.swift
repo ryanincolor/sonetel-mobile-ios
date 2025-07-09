@@ -9,90 +9,130 @@ import SwiftUI
 
 struct CallSettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedCallMethod: CallMethod = .internet
+    @StateObject private var apiService = SonetelAPIService.shared
+
+    @State private var callSettings: CallSettings = CallSettings.defaultSettings
+    @State private var isLoading = true
     @State private var showCallMethodSelection = false
+    @State private var showError = false
+    @State private var errorMessage = ""
+
+    var selectedCallMethod: CallMethodType {
+        // For now, default to internet since we don't have call method in the new API
+        .internet
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            headerView
+            NavigationHeaderView(title: "Call settings") {
+                dismiss()
+            }
 
             // Content
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Settings menu
-                    settingsMenu
+            if isLoading {
+                loadingView
+            } else {
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Settings menu
+                        settingsMenu
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 28)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 28)
-                .padding(.bottom, 40)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .navigationBarHidden(true)
-        .sheet(isPresented: $showCallMethodSelection) {
-            CallMethodSelectionView(selectedMethod: $selectedCallMethod)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.hidden)
+        .navigationDestination(isPresented: $showCallMethodSelection) {
+            CallMethodSelectionView(
+                selectedMethod: Binding(
+                    get: { selectedCallMethod },
+                    set: { newMethod in
+                        Task {
+                            await updateCallMethod(newMethod)
+                        }
+                    }
+                )
+            )
         }
-    }
-
-    private var headerView: some View {
-        HStack {
-            Button(action: { dismiss() }) {
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                        .frame(width: 44, height: 44)
-
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.black)
-                }
+        .onAppear {
+            Task {
+                await loadCallSettings()
             }
-
-            Spacer()
-
-            Text("Call settings")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.black)
-                .tracking(-0.4)
-
-            Spacer()
-
-            // Invisible spacer for balance
-            Circle()
-                .fill(Color.clear)
-                .frame(width: 44, height: 44)
         }
-        .padding(.horizontal, 20)
-        .frame(height: 72)
-        .background(Color.white)
-        .overlay(
-            Rectangle()
-                .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                .frame(height: 1),
-            alignment: .bottom
-        )
+        .alert("Error", isPresented: $showError) {
+            Button("OK") { }
+        } message: {
+            Text(errorMessage)
+        }
     }
+
+
 
     private var settingsMenu: some View {
         VStack(spacing: 0) {
-            SettingsMenuItemView(title: "Call method", value: selectedCallMethod.displayName) {
+            MenuItemView(
+                title: "Call method",
+                value: selectedCallMethod.displayName,
+                type: .navigation
+            ) {
                 showCallMethodSelection = true
             }
 
-            Rectangle()
-                .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                .frame(height: 1)
-
-            NavigationLink(destination: CallerIdSettingsView()) {
-                SettingsMenuItemView(title: "Caller ID") {}
+            NavigationLink(destination: CallerIdSettingsView(callSettings: $callSettings)) {
+                MenuItemView(
+                    title: "Caller ID",
+                    type: .navigation,
+                    hasDivider: false
+                )
             }
-            .buttonStyle(PlainButtonStyle())
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-        .cornerRadius(20)
+        .background(FigmaColorTokens.adaptiveT1)
+        .clipShape(RoundedRectangle(cornerRadius: FigmaBorderRadiusTokens.large))
+    }
+
+    private var loadingView: some View {
+        VStack {
+            Spacer()
+            ProgressView()
+                .scaleEffect(1.2)
+            Text("Loading settings...")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(FigmaColorTokens.textSecondary)
+                .padding(.top, 16)
+            Spacer()
+        }
+    }
+
+    // MARK: - API Methods
+
+    private func loadCallSettings() async {
+        isLoading = true
+
+        do {
+            let settings = try await apiService.getCallSettings()
+            await MainActor.run {
+                self.callSettings = settings
+                self.isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                self.errorMessage = "Failed to load call settings: \(error.localizedDescription)"
+                self.showError = true
+                self.isLoading = false
+            }
+        }
+    }
+
+    private func updateCallMethod(_ method: CallMethodType) async {
+        // For now, we'll just show a message since call method isn't part of the call settings API
+        await MainActor.run {
+            self.errorMessage = "Call method setting will be available in a future update"
+            self.showError = true
+        }
     }
 }
 

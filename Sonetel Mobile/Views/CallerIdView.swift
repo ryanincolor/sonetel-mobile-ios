@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct CallerIdView: View {
+    @State private var showOutgoingSelection = false
+    @State private var showIncomingSelection = false
+
     var body: some View {
         VStack(spacing: 0) {
             // Content
@@ -21,28 +24,36 @@ struct CallerIdView: View {
                 .padding(.bottom, 40)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .navigationTitle("Caller ID")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
-    }
-    
-    private var callerIdMenu: some View {
-        VStack(spacing: 0) {
-            SettingsMenuItemView(title: "Outgoing calls", value: "Automatic") {
-                // Outgoing calls action
-            }
-            
-            Rectangle()
-                .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                .frame(height: 1)
-            
-            SettingsMenuItemView(title: "Incoming calls", value: "Caller's number") {
-                // Incoming calls action
-            }
+        .navigationDestination(isPresented: $showOutgoingSelection) {
+            CallerIdSelectionView(selectedCallerId: .constant("Automatic"), selectionType: .outgoing)
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-        .cornerRadius(20)
+        .navigationDestination(isPresented: $showIncomingSelection) {
+            CallerIdSelectionView(selectedCallerId: .constant("Caller's number"), selectionType: .incoming)
+        }
+    }
+
+    private var callerIdMenu: some View {
+        MenuView(items: [
+            MenuItemView(
+                title: "Outgoing calls",
+                value: "Automatic",
+                type: .navigation
+            ) {
+                showOutgoingSelection = true
+            },
+            MenuItemView(
+                title: "Incoming calls",
+                value: "Caller's number",
+                type: .navigation,
+                hasDivider: false
+            ) {
+                showIncomingSelection = true
+            }
+        ])
     }
 }
 

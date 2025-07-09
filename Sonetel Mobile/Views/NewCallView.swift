@@ -36,7 +36,7 @@ struct NewCallView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .background(Color.white)
+            .background(FigmaColorTokens.surfacePrimary)
         }
     }
 
@@ -46,7 +46,7 @@ struct NewCallView: View {
 
             Text("New Call")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
 
             Spacer()
 
@@ -65,7 +65,7 @@ struct NewCallView: View {
         .padding(.horizontal, 20)
         .padding(.vertical, 20)
         .frame(height: 75)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .overlay(
             Rectangle()
                 .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
@@ -83,20 +83,19 @@ struct NewCallView: View {
             Spacer()
         }
         .frame(height: 44)
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(12)
     }
 
     private var callNumberOption: some View {
         NavigationLink(destination: DialpadView()) {
-            SettingsMenuItemView(
+            MenuItemView(
                 title: "Call a number",
-                hasChevron: false,
-                icon: "square.grid.3x3"
-            ) {}
+                type: .navigation,
+                hasDivider: false
+            )
         }
-        .buttonStyle(PlainButtonStyle())
-        .background(Color(red: 0.961, green: 0.961, blue: 0.961))
+        .background(FigmaColorTokens.adaptiveT1)
         .cornerRadius(12)
     }
 
@@ -126,7 +125,7 @@ struct NewCallView: View {
 
                     if index < contacts.count - 1 {
                         Rectangle()
-                            .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
+                            .fill(FigmaColorTokens.adaptiveT1)
                             .frame(height: 1)
                     }
                 }

@@ -25,10 +25,10 @@ struct PermissionsView: View {
                     contentView
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
+                .background(FigmaColorTokens.surfacePrimary)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .ignoresSafeArea(.all, edges: .top)
     }
 
@@ -36,7 +36,7 @@ struct PermissionsView: View {
         HStack {
             Text("9:41")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
 
             Spacer()
 
@@ -54,7 +54,7 @@ struct PermissionsView: View {
                 // WiFi icon
                 Image(systemName: "wifi")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
 
                 // Battery
                 ZStack {
@@ -78,7 +78,7 @@ struct PermissionsView: View {
         .padding(.horizontal, 16)
         .padding(.top, 21)
         .frame(height: 50)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
     }
 
     private var contentView: some View {
@@ -91,7 +91,7 @@ struct PermissionsView: View {
                 VStack(spacing: 8) {
                     Text("Allow permissions")
                         .font(.system(size: 34, weight: .semibold))
-                        .foregroundColor(.black)
+                        .foregroundColor(FigmaColorTokens.textPrimary)
                         .tracking(-0.68)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 353)
@@ -228,12 +228,12 @@ struct PermissionCardView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .tracking(-0.36)
 
                 Text(description)
                     .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 

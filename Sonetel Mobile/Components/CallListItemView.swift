@@ -9,8 +9,8 @@ import SwiftUI
 
 struct CallListItemView: View {
     let callRecord: CallRecord
+    @Binding var isDetailViewPresented: Bool
     @State private var showCallOptions = false
-    @State private var showCallDetail = false
 
     var body: some View {
         Button(action: {
@@ -19,11 +19,12 @@ struct CallListItemView: View {
             HStack(spacing: 12) {
                 ProfileAvatarView(
                     imageURL: callRecord.avatarImageURL,
-                    initial: callRecord.contactInitial
+                    initial: callRecord.contactInitial,
+                    flagEmoji: callRecord.flagEmoji
                 )
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(callRecord.contactName)
+                    Text(callRecord.displayName)
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(callRecord.isMissed ? .red : .primary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -36,41 +37,42 @@ struct CallListItemView: View {
 
                 Spacer()
 
-                Button(action: {
-                    showCallDetail = true
-                }) {
+                NavigationLink(destination:
+                    CallDetailView(callRecord: callRecord)
+                        .onAppear { isDetailViewPresented = true }
+                        .onDisappear { isDetailViewPresented = false }
+                ) {
                     Image(systemName: "info.circle")
                         .font(.system(size: 28))
                         .foregroundColor(.primary.opacity(0.6))
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(.plain)
             }
             .padding(.vertical, 12)
             .contentShape(Rectangle())
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
         .sheet(isPresented: $showCallOptions) {
             CallOptionsView(contact: Contact(
                 name: callRecord.contactName,
                 phoneNumber: callRecord.phoneNumber,
                 avatarImageURL: callRecord.avatarImageURL
             ))
-            .presentationDetents([.height(338)])
-            .presentationDragIndicator(.hidden)
         }
-        .sheet(isPresented: $showCallDetail) {
-            CallDetailView(callRecord: callRecord)
-        }
+
     }
 }
 
 #Preview {
-    VStack(spacing: 0) {
-        CallListItemView(callRecord: CallRecord.sampleData[0])
-        Divider()
-        CallListItemView(callRecord: CallRecord.sampleData[2])
-        Divider()
-        CallListItemView(callRecord: CallRecord.sampleData[4])
-    }
-    .padding(.horizontal, 20)
+    CallListItemView(
+        callRecord: CallRecord(
+            contactName: "John Doe",
+            phoneNumber: "+1234567890",
+            timestamp: "2 min ago",
+            avatarImageURL: nil,
+            isMissed: true
+        ),
+        isDetailViewPresented: .constant(false)
+    )
+    .padding()
 }

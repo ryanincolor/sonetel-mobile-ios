@@ -14,18 +14,18 @@ struct SettingsView: View {
     @AppStorage("selectedLanguage") private var selectedLanguage = ""
     @AppStorage("selectedColorScheme") private var selectedColorScheme = "system"
     @State private var showingSafari = false
-    @State private var showingTerms = false
-    @State private var showingLanguageSelection = false
-    @State private var showingColorSchemeSelection = false
+
+
     @State private var showingVersionCopied = false
-    @State private var showingPhoneNumbers = false
-    @State private var showingCallSettings = false
+
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Header
-                headerView
+                // Header with close button
+                NavigationHeaderView(title: "Settings", showBackButton: false, showCloseButton: true) {
+                    dismiss()
+                }
 
                 // Content
                 ScrollView {
@@ -36,10 +36,10 @@ struct SettingsView: View {
                         // Main menu sections
                         mainMenuSection
 
+
+
                         // Development section (only in debug builds)
-                        #if DEBUG
-                        developmentSection
-                        #endif
+
 
                         // App section
                         appSection
@@ -55,30 +55,14 @@ struct SettingsView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .background(Color.white)
+            .background(FigmaColorTokens.surfacePrimary)
         }
         .sheet(isPresented: $showingSafari) {
             SafariView(url: URL(string: "https://sonetel.com/en/help/support-center/")!)
         }
-        .sheet(isPresented: $showingTerms) {
-            TermsOfUseView()
-        }
-        .sheet(isPresented: $showingLanguageSelection) {
-            LanguageSelectionView()
-        }
-        .sheet(isPresented: $showingColorSchemeSelection) {
-            ColorSchemeSelectionView()
-        }
-        .sheet(isPresented: $showingPhoneNumbers) {
-            NavigationStack {
-                PhoneNumbersView()
-            }
-        }
-        .sheet(isPresented: $showingCallSettings) {
-            NavigationStack {
-                CallSettingsView()
-            }
-        }
+
+
+
         .overlay(
             Group {
                 if showingVersionCopied {
@@ -95,219 +79,130 @@ struct SettingsView: View {
                                 .cornerRadius(8)
                             Spacer()
                         }
-                        .padding(.bottom, 100)
+                        Spacer()
                     }
                 }
             }
         )
     }
 
-    private var headerView: some View {
-        HStack {
-            Spacer()
 
-            Text("Settings")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.black)
 
-            Spacer()
-
-            Button(action: { dismiss() }) {
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                        .frame(width: 32, height: 32)
-
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
-                }
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 20)
-        .background(Color.white)
-        .overlay(
-            Rectangle()
-                .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
-                .frame(height: 1),
-            alignment: .bottom
-        )
-    }
-
+    // MARK: - Menu Sections
     private var mainMenuSection: some View {
         VStack(spacing: 0) {
-            SettingsMenuItemView(title: "Phone numbers") {
-                showingPhoneNumbers = true
+            NavigationLink(destination: PhoneNumbersView()) {
+                MenuItemView(title: "Phone Numbers", type: .navigation)
             }
 
-            Rectangle()
-                .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                .frame(height: 1)
-
-            SettingsMenuItemView(title: "Call settings") {
-                showingCallSettings = true
+            NavigationLink(destination: CallSettingsView()) {
+                MenuItemView(title: "Call Settings", type: .navigation, hasDivider: false)
             }
         }
-        .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-        .cornerRadius(20)
+        .background(FigmaColorTokens.adaptiveT1)
+        .clipShape(RoundedRectangle(cornerRadius: FigmaBorderRadiusTokens.large))
     }
 
     private var appSection: some View {
         VStack(spacing: 8) {
-            // Section header
-            HStack {
-                Text("App")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0, green: 0, blue: 0, opacity: 0.6))
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-
-            // Menu items
             VStack(spacing: 0) {
-                SettingsMenuItemView(title: "Language", value: currentLanguageDisplayName) {
-                    showingLanguageSelection = true
+                NavigationLink(destination: LanguageSelectionView()) {
+                    MenuItemView(
+                        title: "Language",
+                        value: currentLanguageDisplayName,
+                        type: .navigation
+                    )
                 }
 
-                Rectangle()
-                    .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                    .frame(height: 1)
-
-                SettingsMenuItemView(title: "Color scheme", value: currentColorSchemeDisplayName) {
-                    showingColorSchemeSelection = true
+                NavigationLink(destination: ColorSchemeSelectionView()) {
+                    MenuItemView(
+                        title: "Appearance",
+                        value: currentColorSchemeDisplayName,
+                        type: .navigation,
+                        hasDivider: false
+                    )
                 }
             }
-            .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-            .cornerRadius(20)
+            .background(FigmaColorTokens.adaptiveT1)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
     }
 
     private var aboutSection: some View {
         VStack(spacing: 8) {
-            // Section header
-            HStack {
-                Text("About")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0, green: 0, blue: 0, opacity: 0.6))
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-
-            // Menu items
             VStack(spacing: 0) {
-                SettingsMenuItemView(title: "Help center") {
+                MenuItemView(
+                    title: "Help & Support",
+                    type: .navigation
+                ) {
                     showingSafari = true
                 }
 
-                Rectangle()
-                    .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                    .frame(height: 1)
-
-                SettingsMenuItemView(title: "Terms of use") {
-                    showingTerms = true
+                NavigationLink(destination: TermsOfUseView()) {
+                    MenuItemView(
+                        title: "Terms of Use",
+                        type: .navigation
+                    )
                 }
 
-                Rectangle()
-                    .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                    .frame(height: 1)
-
-                SettingsMenuItemView(title: "Sonetel for iOS", value: appVersion, hasChevron: false) {
+                MenuItemView(
+                    title: "Version",
+                    value: appVersion,
+                    type: .select,
+                    hasDivider: false
+                ) {
                     copyVersionToClipboard()
                 }
             }
-            .background(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-            .cornerRadius(20)
+            .background(FigmaColorTokens.adaptiveT1)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
     }
 
-    #if DEBUG
-    private var developmentSection: some View {
-        VStack(spacing: 8) {
-            // Section header
-            HStack {
-                Text("🚀 Development")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0, green: 0, blue: 0, opacity: 0.6))
-                Spacer()
-            }
-            .padding(.horizontal, 16)
 
-            // Menu items
-            VStack(spacing: 0) {
-                Button(action: {
-                    authManager.testLoginFlow()
-                    dismiss()
-                }) {
-                    HStack {
-                        Text("Test Login Flow")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
-                            .multilineTextAlignment(.leading)
 
-                        Spacer()
 
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 16)
-                    .frame(minHeight: 56)
-                }
-                .buttonStyle(PlainButtonStyle())
-
-                Rectangle()
-                    .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.04))
-                    .frame(height: 1)
-
-                Button(action: {
-                    authManager.quickLoginForTesting()
-                }) {
-                    HStack {
-                        Text("Quick Login")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
-                            .multilineTextAlignment(.leading)
-
-                        Spacer()
-
-                        Image(systemName: "bolt.fill")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color(red: 0.039, green: 0.039, blue: 0.039))
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 16)
-                    .frame(minHeight: 56)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-            .background(Color.orange.opacity(0.1))
-            .cornerRadius(20)
-        }
-    }
-    #endif
 
     private var logoutSection: some View {
         VStack(spacing: 0) {
-            SettingsMenuItemView(
+            MenuItemView(
                 title: "Logout",
-                hasChevron: false,
-                isDestructive: true
+                type: .select,
+                hasDivider: false
             ) {
                 authManager.logout()
                 dismiss()
             }
         }
-        .background(Color(red: 0.953, green: 0.953, blue: 0.953))
-        .cornerRadius(20)
+        .background(FigmaColorTokens.adaptiveT1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+
+    // MARK: - Helper Views
+    private func accountInfoRow(title: String, value: String, truncate: Bool = false) -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(red: 0.067, green: 0.067, blue: 0.067))
+                Spacer()
+                Text(value)
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(Color(red: 0, green: 0, blue: 0, opacity: 0.6))
+                    .lineLimit(truncate ? 1 : nil)
+                    .truncationMode(truncate ? .middle : .tail)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .frame(minHeight: 56)
+
+            Rectangle().fill(FigmaColorTokens.adaptiveT1).frame(height: 1)
+        }
     }
 
     // MARK: - Computed Properties
-
-    private var currentUserProfile: UserProfile {
+    var currentUserProfile: UserProfile {
         if let user = authManager.currentUser {
-            // Use actual name if available, otherwise extract from email
             let displayName: String
             if let name = user.name, !name.isEmpty {
                 displayName = name
@@ -363,7 +258,6 @@ struct SettingsView: View {
     }
 
     // MARK: - Helper Methods
-
     private func copyVersionToClipboard() {
         UIPasteboard.general.string = appVersion
         showingVersionCopied = true
@@ -372,6 +266,31 @@ struct SettingsView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             showingVersionCopied = false
         }
+    }
+
+    private func formatDate(_ dateString: String) -> String {
+        // Try to parse common date formats from API
+        let dateFormats = [
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+            "yyyy-MM-dd'T'HH:mm:ssZ",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd"
+        ]
+
+        for format in dateFormats {
+            let formatter = DateFormatter()
+            formatter.dateFormat = format
+
+            if let date = formatter.date(from: dateString) {
+                let displayFormatter = DateFormatter()
+                displayFormatter.dateStyle = .medium
+                displayFormatter.timeStyle = .short
+                return displayFormatter.string(from: date)
+            }
+        }
+
+        // If parsing fails, return the original string
+        return dateString
     }
 }
 

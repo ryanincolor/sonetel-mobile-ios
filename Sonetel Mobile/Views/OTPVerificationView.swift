@@ -23,10 +23,10 @@ struct OTPVerificationView: View {
                     contentView
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
+                .background(FigmaColorTokens.surfacePrimary)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .ignoresSafeArea(.all, edges: .top)
         .alert("Error", isPresented: .constant(authManager.errorMessage != nil)) {
             Button("OK") {
@@ -59,7 +59,7 @@ struct OTPVerificationView: View {
         HStack {
             Text("9:41")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
 
             Spacer()
 
@@ -77,7 +77,7 @@ struct OTPVerificationView: View {
                 // WiFi icon
                 Image(systemName: "wifi")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
 
                 // Battery
                 ZStack {
@@ -101,7 +101,7 @@ struct OTPVerificationView: View {
         .padding(.horizontal, 16)
         .padding(.top, 21)
         .frame(height: 50)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
     }
 
     private var contentView: some View {
@@ -110,7 +110,7 @@ struct OTPVerificationView: View {
             VStack(spacing: 4) {
                 Text("Verification code")
                     .font(.system(size: 34, weight: .semibold))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .tracking(-0.68)
                     .multilineTextAlignment(.center)
 
@@ -210,7 +210,7 @@ struct OTPDigitField: View {
 
             TextField("", text: $text)
                 .font(.system(size: 24, weight: .semibold))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
                 .multilineTextAlignment(.center)
                 .keyboardType(.numberPad)
                 .onChange(of: text) { _, newValue in
@@ -227,7 +227,7 @@ struct OTPDigitField: View {
             // Display the digit
             Text(text)
                 .font(.system(size: 24, weight: .semibold))
-                .foregroundColor(.black)
+                .foregroundColor(FigmaColorTokens.textPrimary)
         }
         .overlay(
             RoundedRectangle(cornerRadius: 8)

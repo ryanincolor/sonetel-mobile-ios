@@ -9,37 +9,37 @@ import SwiftUI
 
 struct WelcomeView: View {
     @EnvironmentObject var authManager: AuthenticationManager
-    
+
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 // Status bar spacer
                 statusBarView
-                
+
                 // Main content
                 VStack(spacing: 4) {
                     // Hero section
                     heroSectionView
-                    
+
                     // Text and button
                     bottomSectionView
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
+                .background(FigmaColorTokens.surfacePrimary)
             }
         }
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
         .ignoresSafeArea(.all, edges: .top)
     }
-    
+
     private var statusBarView: some View {
         HStack {
             Text("9:41")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(.black)
-            
+                .foregroundColor(FigmaColorTokens.textPrimary)
+
             Spacer()
-            
+
             HStack(spacing: 7) {
                 // Signal strength bars
                 HStack(spacing: 2) {
@@ -50,23 +50,23 @@ struct WelcomeView: View {
                             .opacity(index < 3 ? 1.0 : 0.4)
                     }
                 }
-                
+
                 // WiFi icon
                 Image(systemName: "wifi")
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.black)
-                
+                    .foregroundColor(FigmaColorTokens.textPrimary)
+
                 // Battery
                 ZStack {
                     RoundedRectangle(cornerRadius: 2.5)
                         .stroke(.black, lineWidth: 1)
                         .frame(width: 24, height: 12)
                         .opacity(0.35)
-                    
+
                     RoundedRectangle(cornerRadius: 1)
                         .fill(.black)
                         .frame(width: 20, height: 8)
-                    
+
                     // Battery tip
                     RoundedRectangle(cornerRadius: 1)
                         .fill(.black.opacity(0.4))
@@ -78,9 +78,9 @@ struct WelcomeView: View {
         .padding(.horizontal, 16)
         .padding(.top, 21)
         .frame(height: 50)
-        .background(Color.white)
+        .background(FigmaColorTokens.surfacePrimary)
     }
-    
+
     private var heroSectionView: some View {
         VStack(spacing: 0) {
             // Sonetel logo section
@@ -89,7 +89,7 @@ struct WelcomeView: View {
                     RoundedRectangle(cornerRadius: 20)
                         .fill(Color(red: 0.961, green: 0.961, blue: 0.961))
                         .frame(height: 415)
-                    
+
                     // Sonetel logo placeholder - simplified version
                     Circle()
                         .fill(
@@ -113,12 +113,12 @@ struct WelcomeView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
             }
-            
+
             // Text section
             VStack(spacing: 0) {
                 Text("Make and recieve calls worldwide at the cost of a local call.")
                     .font(.system(size: 34, weight: .semibold))
-                    .foregroundColor(.black)
+                    .foregroundColor(FigmaColorTokens.textPrimary)
                     .multilineTextAlignment(.center)
                     .tracking(-0.68)
                     .padding(.horizontal, 20)
@@ -127,11 +127,58 @@ struct WelcomeView: View {
             }
         }
     }
-    
+
     private var bottomSectionView: some View {
         VStack(spacing: 0) {
             Spacer()
-            
+
+            // Development buttons
+            HStack(spacing: 12) {
+                // Dummy account button
+                Button(action: {
+                    authManager.dummyAccountLogin()
+                }) {
+                    HStack(spacing: 4) {
+                        if authManager.isLoading {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                        Text(authManager.isLoading ? "Loading..." : "Demo Account")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.blue.opacity(0.7))
+                    .cornerRadius(12)
+                }
+                .disabled(authManager.isLoading)
+
+                Spacer()
+
+                // Development quick login button
+                Button(action: {
+                    authManager.devQuickLogin()
+                }) {
+                    HStack(spacing: 4) {
+                        if authManager.isLoading {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
+                        Text(authManager.isLoading ? "Logging in..." : "DEV Login")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.gray.opacity(0.3))
+                    .cornerRadius(12)
+                }
+                .disabled(authManager.isLoading)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
+
             // Get started button
             Button(action: {
                 authManager.startAuthentication()
